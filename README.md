@@ -94,7 +94,7 @@ TBD
 
 Check out our sample implementations to see the generator in action:
 
-- [Trilium Notes ETAPI Server](./samples/TriliumNext/readme.md) - An MCP server for the Trilium Notes knowledge management system's ETAPI
+- [Trilium Notes ETAPI Server](./samples/TriliumNext/README.md) - An MCP server for the Trilium Notes knowledge management system's ETAPI
 
 ## Contributing
 
