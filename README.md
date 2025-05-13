@@ -90,6 +90,12 @@ For more detailed information, see:
 
 TBD
 
+## Sample Implementations
+
+Check out our sample implementations to see the generator in action:
+
+- [Trilium Notes ETAPI Server](./samples/TriliumNext/readme.md) - An MCP server for the Trilium Notes knowledge management system's ETAPI
+
 ## Contributing
 
 1. Fork the repository

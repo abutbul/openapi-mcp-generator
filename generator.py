@@ -29,12 +29,28 @@ def parse_openapi_spec(filepath: str) -> Dict[str, Any]:
         
     Returns:
         Dictionary containing the parsed OpenAPI specification
+        
+    Raises:
+        SystemExit: If the file cannot be read or parsed
     """
+    if not os.path.exists(filepath):
+        print(f"Error: OpenAPI specification file not found: {filepath}")
+        sys.exit(1)
+        
     try:
-        with open(filepath, 'r') as f:
-            return yaml.safe_load(f)
-    except Exception as e:
-        print(f"Error parsing OpenAPI specification: {e}")
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+            try:
+                spec = yaml.safe_load(content)
+                if not isinstance(spec, dict):
+                    print(f"Error: OpenAPI specification must be a YAML document containing an object, got {type(spec)}")
+                    sys.exit(1)
+                return spec
+            except yaml.YAMLError as e:
+                print(f"Error parsing YAML in OpenAPI specification: {e}")
+                sys.exit(1)
+    except IOError as e:
+        print(f"Error reading OpenAPI specification file: {e}")
         sys.exit(1)
 
 
@@ -245,12 +261,12 @@ def generate_mcp_server(
     image_name = container_name.lower()
     project_name = container_name.lower().replace('-', '_')
     
-    # Force bearer auth type and ensure token is read from env
+    # Pass api_token through directly instead of environment variable placeholder
     template_context = {
         'api_name': api_name,
         'api_url': api_url,
         'auth_type': 'bearer',  # Always use bearer auth
-        'api_token': '${API_TOKEN}',  # Will be replaced by env var
+        'api_token': api_token,  # Pass through directly
         'api_username': '',
         'api_password': '',
         'container_name': container_name,
