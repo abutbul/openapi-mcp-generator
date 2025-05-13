@@ -4,11 +4,11 @@ A Python tool that automatically converts OpenAPI specifications into fully func
 
 ## Key features:
 
-🔄 OpenAPI to MCP tools/resources conversion
-🐳 Docker-ready with multi-stage builds
-🔐 Multiple authentication methods
-⚡ Async operations & rate limiting
-📡 SSE/IO communication protocols
+- 🔄 OpenAPI to MCP tools/resources conversion
+- 🐳 Docker-ready with multi-stage builds
+- 🔐 Multiple authentication methods
+- ⚡ Async operations & rate limiting
+- 📡 SSE/IO communication protocols
 
 ## Overview
 
