@@ -1,6 +1,14 @@
 # OpenAPI to MCP Server Generator
 
-A tool that generates Model Context Protocol (MCP) servers from OpenAPI specifications.
+A Python tool that automatically converts OpenAPI specifications into fully functional Model Context Protocol (MCP) servers. Generates Docker-ready implementations with support for SSE/IO communication protocols, authentication, and comprehensive error handling.
+
+## Key features:
+
+🔄 OpenAPI to MCP tools/resources conversion
+🐳 Docker-ready with multi-stage builds
+🔐 Multiple authentication methods
+⚡ Async operations & rate limiting
+📡 SSE/IO communication protocols
 
 ## Overview
 
@@ -90,8 +98,7 @@ TBD
 4. Run the test suite
 5. Submit a pull request
 
-See [Project Guidelines](./project-guidelines.md) for coding standards and testing requirements.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the (./LICENSE) file for details.
