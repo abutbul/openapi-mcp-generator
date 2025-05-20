@@ -1,0 +1,126 @@
+openapi: "3.0.3"
+info:
+  title: "Reference Test API"
+  description: "API to test $ref in parameters and oneOf in schemas."
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8000/api"
+    description: "Test Server"
+components:
+  parameters:
+    IdRequired:
+      name: "id"
+      in: "query"
+      description: "Numeric Identification number."
+      required: true
+      schema:
+        type: "integer"
+    Verbose:
+      name: "verbose"
+      in: "query"
+      description: "Boolean Flag to enable more detail information when set, default is False"
+      required: false
+      schema:
+        type: "boolean"
+  schemas:
+    DataReturned:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+        data:
+          type: "object"
+    ErrorModel:
+      type: "object"
+      properties:
+        code:
+          type: "integer"
+        message:
+          type: "string"
+    BadRequestDetails:
+      type: "object"
+      description: "Schema demonstrating oneOf for bad request details"
+      properties:
+        error_type:
+          type: "string"
+        details:
+          oneOf:
+            - type: "string"
+              description: "Simple error message as a string"
+            - $ref: "#/components/schemas/ErrorModel"
+              description: "Structured error object"
+  responses:
+    SuccessResponse:
+      description: "Successful response with data"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DataReturned"
+    ErrorResponse:
+      description: "An error occurred"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorModel"
+    BadRequestResponse:
+      description: "Bad request with specific details"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/BadRequestDetails"
+
+paths:
+  /items:
+    get:
+      operationId: "getItems"
+      summary: "Get a list of items using referenced parameters"
+      description: "This endpoint demonstrates the use of referenced parameters ($ref) and referenced responses."
+      parameters:
+        - $ref: "#/components/parameters/IdRequired" # Referenced parameter
+        - $ref: "#/components/parameters/Verbose"   # Referenced parameter
+        - name: "limit" # Inline parameter
+          in: "query"
+          description: "Maximum number of items to return."
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: 10
+      responses:
+        "200":
+          $ref: "#/components/responses/SuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestResponse" # Uses schema with oneOf
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+  /legacy_items:
+    post:
+      operationId: "createLegacyItem"
+      summary: "Create a legacy item with inline parameters"
+      description: "This endpoint uses inline parameter definitions."
+      parameters:
+        - name: "itemName"
+          in: "query"
+          description: "Name of the legacy item."
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        description: "Item data to create"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                value:
+                  type: "number"
+      responses:
+        "201":
+          description: "Item created successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataReturned"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
