@@ -1,0 +1,46 @@
+name: Generate and Test OpenAPI MCP Server
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run generator script
+        run: |
+          mkdir -p tests/oneOftestcase/
+          python generator.py \
+            tests/oneOftestcase/openapi.yaml \
+            --output-dir ./tests/oneOftestcase/ \
+            --api-url http://localhost:8000/api \
+            --api-token "test-token"
+
+      - name: Verify output directory exists
+        run: |
+          ls ./tests/oneOftestcase/ | grep "openapi-mcp-reference-test-api-"
+        shell: bash
+
+      - name: Verify generated mcp_server.py
+        run: |
+          GENERATED_DIR=$(ls ./tests/oneOftestcase/ | grep "openapi-mcp-reference-test-api-" | head -n 1)
+          grep -q "async def getItems(id: int, verbose: bool, limit: int, ctx: Context) -> str:" ./tests/oneOftestcase/$GENERATED_DIR/mcp_server.py
+          grep -q "def get_BadRequestDetails_schema" ./tests/oneOftestcase/$GENERATED_DIR/mcp_server.py
+        shell: bash

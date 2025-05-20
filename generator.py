@@ -82,14 +82,34 @@ def generate_tool_definitions(spec: Dict[str, Any]) -> str:
                 description = sanitize_description(operation.get('description', f"{method.upper()} {path}"))
                 
                 # Get parameters
-                parameters = []
-                for param in operation.get('parameters', []):
-                    param_name = param['name']
+                parameters_definitions = []
+                for param_obj in operation.get('parameters', []):
+                    actual_param = {}
+                    if '$ref' in param_obj:
+                        ref_path = param_obj['$ref']
+                        # Resolve the reference, e.g., #/components/parameters/IdRequired
+                        try:
+                            parts = ref_path.strip('#/').split('/')
+                            resolved_obj = spec
+                            for part in parts:
+                                resolved_obj = resolved_obj[part]
+                            actual_param = resolved_obj
+                        except KeyError:
+                            print(f"Warning: Could not resolve parameter reference: {ref_path}")
+                            continue
+                    else:
+                        actual_param = param_obj
+
+                    if not actual_param or 'name' not in actual_param:
+                        print(f"Warning: Skipping parameter due to missing name or unresolved reference: {param_obj}")
+                        continue
+                        
+                    param_name = actual_param['name']
                     param_type = "str"  # Default to string
                     
                     # Try to determine appropriate Python type
-                    if 'schema' in param:
-                        schema_type = param['schema'].get('type', 'string')
+                    if 'schema' in actual_param:
+                        schema_type = actual_param['schema'].get('type', 'string')
                         if schema_type == 'integer':
                             param_type = "int"
                         elif schema_type == 'number':
@@ -97,15 +117,15 @@ def generate_tool_definitions(spec: Dict[str, Any]) -> str:
                         elif schema_type == 'boolean':
                             param_type = "bool"
                     
-                    parameters.append(f"{param_name}: {param_type}")
+                    parameters_definitions.append(f"{param_name}: {param_type}")
                 
                 # Add ctx parameter
-                parameters.append("ctx: Context")
+                parameters_definitions.append("ctx: Context")
                 
                 # Create tool function
                 tool_def = f"""
 @mcp.tool(description="{description}")
-async def {operation_id}({', '.join(parameters)}) -> str:
+async def {operation_id}({', '.join(parameters_definitions)}) -> str:
     \"\"\"
     {description}
     \"\"\"
