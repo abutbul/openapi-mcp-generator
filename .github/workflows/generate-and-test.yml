@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
@@ -26,21 +26,21 @@ jobs:
 
       - name: Run generator script
         run: |
-          mkdir -p tests/oneOftestcase/
+          mkdir -p tests/out/
           python generator.py \
-            tests/oneOftestcase/openapi.yaml \
-            --output-dir ./tests/oneOftestcase/ \
+            tests/openapi.yaml \
+            --output-dir ./tests/out/ \
             --api-url http://localhost:8000/api \
             --api-token "test-token"
 
       - name: Verify output directory exists
         run: |
-          ls ./tests/oneOftestcase/ | grep "openapi-mcp-reference-test-api-"
+          ls ./tests/out/ | grep "openapi-mcp-reference-test-api-"
         shell: bash
 
       - name: Verify generated mcp_server.py
         run: |
-          GENERATED_DIR=$(ls ./tests/oneOftestcase/ | grep "openapi-mcp-reference-test-api-" | head -n 1)
-          grep -q "async def getItems(id: int, verbose: bool, limit: int, ctx: Context) -> str:" ./tests/oneOftestcase/$GENERATED_DIR/mcp_server.py
-          grep -q "def get_BadRequestDetails_schema" ./tests/oneOftestcase/$GENERATED_DIR/mcp_server.py
+          GENERATED_DIR=$(ls ./tests/out/ | grep "openapi-mcp-reference-test-api-" | head -n 1)
+          grep -q "async def getItems(id: int, verbose: bool, limit: int, ctx: Context) -> str:" ./tests/out/$GENERATED_DIR/mcp_server.py
+          grep -q "def get_BadRequestDetails_schema" ./tests/out/$GENERATED_DIR/mcp_server.py
         shell: bash
