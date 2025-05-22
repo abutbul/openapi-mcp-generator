@@ -1,6 +1,7 @@
 import os
 import sys
 import yaml
+import re # Added for TypeScriptOpenAPIParser
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 
@@ -83,7 +84,7 @@ class OpenAPISpecParser(BaseOpenAPISpecParser):
 class TypeScriptOpenAPIParser(BaseOpenAPISpecParser):
     """
     Parses an OpenAPI specification file, potentially with TypeScript-specific
-    extensions or considerations in the future.
+    extensions or considerations in the future. This is a stub implementation.
     """
 
     def __init__(self):
@@ -95,14 +96,45 @@ class TypeScriptOpenAPIParser(BaseOpenAPISpecParser):
     def parse(self, filepath: str) -> Dict[str, Any]:
         """
         Parse an OpenAPI specification file (intended for TypeScript projects).
+        This is a basic stub implementation that checks for keywords and extracts a title.
         
         Args:
-            filepath: Path to the OpenAPI file
+            filepath: Path to the OpenAPI file (e.g., a .ts file)
             
         Returns:
-            Dictionary containing the parsed OpenAPI specification
+            A dictionary structure resembling a parsed OpenAPI spec.
             
         Raises:
-            NotImplementedError: This parser is not yet implemented.
+            SystemExit: If the file cannot be read or basic keywords are not found.
         """
-        raise NotImplementedError("TypeScript OpenAPI parsing is not yet implemented.")
+        if not os.path.exists(filepath):
+            print(f"Error: TypeScript OpenAPI file not found: {filepath}")
+            sys.exit(1)
+
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except IOError as e:
+            print(f"Error reading TypeScript OpenAPI file: {e}")
+            sys.exit(1)
+
+        # Basic keyword check
+        if not all(keyword in content for keyword in ["openapi:", "info:", "title:"]):
+            print(f"Error: Essential OpenAPI keywords not found in {filepath}. This does not appear to be a valid OpenAPI-like TS file.")
+            sys.exit(1)
+            
+        # Extract title using regex
+        title = "Sample TS API" # Default title
+        match = re.search(r"title:\s*['\"](.*?)['\"]", content)
+        if match and match.group(1):
+            title = match.group(1)
+
+        # Return a stubbed OpenAPI-like dictionary
+        return {
+            "openapi": "3.0.0",
+            "info": {
+                "title": title,
+                "version": "1.0.0-ts-stub"
+            },
+            "paths": {}
+        }
