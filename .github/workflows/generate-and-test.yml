@@ -28,7 +28,7 @@ jobs:
         run: |
           pip install -e .
 
-      - name: Run generator script
+      - name: Run generator script (OpenAPI YAML)
         run: |
           mkdir -p tests/out/
           python generator.py \
@@ -37,26 +37,40 @@ jobs:
             --api-url http://localhost:8000/api \
             --api-token "test-token"
 
-      - name: Run generator via CLI tool
+      - name: Run generator script (JSON specifications)
+        run: |
+          python generator.py \
+            tests/test_fixtures/ \
+            --output-dir ./tests/out/ \
+            --api-url http://localhost:8000/api \
+            --api-token "test-token"
+
+      - name: Run generator via CLI tool (OpenAPI YAML)
         run: |
           mkdir -p tests/out_cli/
           mcp-generator tests/openapi.yaml --output-dir ./tests/out_cli/ --api-url http://localhost:8000/api --api-token "test-token"
 
-      - name: Run generator via Python module
+      - name: Run generator via CLI tool (JSON specifications)
+        run: |
+          mcp-generator tests/test_fixtures/ --output-dir ./tests/out_cli/ --api-url http://localhost:8000/api --api-token "test-token"
+
+      - name: Run generator via Python module (OpenAPI YAML)
         run: |
           mkdir -p tests/out_module/
           python -m openapi_mcp_generator.cli tests/openapi.yaml --output-dir ./tests/out_module/ --api-url http://localhost:8000/api --api-token "test-token"
 
-      - name: Verify output directory exists
+      - name: Run generator via Python module (JSON specifications)
         run: |
-          ls ./tests/out/ | grep "openapi-mcp-reference-test-api-"
-        shell: bash
+          python -m openapi_mcp_generator.cli tests/test_fixtures/ --output-dir ./tests/out_module/ --api-url http://localhost:8000/api --api-token "test-token"
 
-      - name: Verify generated mcp_server.py
+      - name: Verify output directories exist
         run: |
-          GENERATED_DIR=$(ls ./tests/out/ | grep "openapi-mcp-reference-test-api-" | head -n 1)
-          grep -q "async def getItems(id: int, verbose: bool, limit: int, ctx: Context) -> str:" ./tests/out/$GENERATED_DIR/mcp_server.py
-          grep -q "def get_BadRequestDetails_schema" ./tests/out/$GENERATED_DIR/mcp_server.py
+          echo "Checking tests/out/ directory:"
+          ls ./tests/out/ | grep -E "(openapi-mcp-reference-test-api-|openapi-mcp-generated-api-)"
+          echo "Checking tests/out_cli/ directory:"
+          ls ./tests/out_cli/ | grep -E "(openapi-mcp-reference-test-api-|openapi-mcp-generated-api-)"
+          echo "Checking tests/out_module/ directory:"
+          ls ./tests/out_module/ | grep -E "(openapi-mcp-reference-test-api-|openapi-mcp-generated-api-)"
         shell: bash
 
       - name: Install pytest

@@ -1,0 +1,29 @@
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "error_type": {
+          "type": "string",
+          "enum": ["validation_error"]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": ["field", "message"]
+          }
+        }
+      },
+      "required": ["error_type", "errors"]
+    }
+  ]
+}
