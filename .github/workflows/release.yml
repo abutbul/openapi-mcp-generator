@@ -1,6 +1,7 @@
 name: Create Release Artifacts
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*' # Trigger on tags like v1.0, v2.0.1, etc.
@@ -29,7 +30,7 @@ jobs:
       - name: Clean dist directory
         run: rm -rf dist
       - name: Build distribution archives
-        run: python setup.py sdist bdist_wheel
+        run: python -m build --sdist --wheel
 
       - name: Upload distribution artifacts
         uses: actions/upload-artifact@v4
