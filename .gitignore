@@ -3,3 +3,6 @@ project-*.md
 build/
 __pycache__/
 *.egg-info/
+dist/
+uv.lock
+publish.md
