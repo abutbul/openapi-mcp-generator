@@ -17,12 +17,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Install package (editable mode)
+        run: |
+          pip install -e .
 
       - name: Run generator script
         run: |
@@ -32,6 +36,16 @@ jobs:
             --output-dir ./tests/out/ \
             --api-url http://localhost:8000/api \
             --api-token "test-token"
+
+      - name: Run generator via CLI tool
+        run: |
+          mkdir -p tests/out_cli/
+          mcp-generator tests/openapi.yaml --output-dir ./tests/out_cli/ --api-url http://localhost:8000/api --api-token "test-token"
+
+      - name: Run generator via Python module
+        run: |
+          mkdir -p tests/out_module/
+          python -m openapi_mcp_generator.cli tests/openapi.yaml --output-dir ./tests/out_module/ --api-url http://localhost:8000/api --api-token "test-token"
 
       - name: Verify output directory exists
         run: |
@@ -44,3 +58,11 @@ jobs:
           grep -q "async def getItems(id: int, verbose: bool, limit: int, ctx: Context) -> str:" ./tests/out/$GENERATED_DIR/mcp_server.py
           grep -q "def get_BadRequestDetails_schema" ./tests/out/$GENERATED_DIR/mcp_server.py
         shell: bash
+
+      - name: Install pytest
+        run: |
+          pip install pytest
+
+      - name: Run tests on generated server output
+        run: |
+          pytest tests/test_generated_server.py

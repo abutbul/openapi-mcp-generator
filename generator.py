@@ -16,9 +16,26 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from jinja2 import Environment, FileSystemLoader
 
+# Import from the parser module
+try:
+    from openapi_mcp_generator.parser import resolve_ref, parse_openapi_spec, sanitize_description
+except ImportError:
+    # Fallback for when running as standalone script
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'openapi_mcp_generator'))
+    from parser import resolve_ref, parse_openapi_spec, sanitize_description
+
 # Setup Jinja2 environment for templates
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
 env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+
+# Try to import from the modular version - if it fails, we'll use the original implementation
+try:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from openapi_mcp_generator.generator import generate_mcp_server as modular_generate
+    USE_MODULAR = True
+except ImportError:
+    USE_MODULAR = False
+
 
 def parse_openapi_spec(filepath: str) -> Dict[str, Any]:
     """
@@ -84,21 +101,10 @@ def generate_tool_definitions(spec: Dict[str, Any]) -> str:
                 # Get parameters
                 parameters_definitions = []
                 for param_obj in operation.get('parameters', []):
-                    actual_param = {}
-                    if '$ref' in param_obj:
-                        ref_path = param_obj['$ref']
-                        # Resolve the reference, e.g., #/components/parameters/IdRequired
-                        try:
-                            parts = ref_path.strip('#/').split('/')
-                            resolved_obj = spec
-                            for part in parts:
-                                resolved_obj = resolved_obj[part]
-                            actual_param = resolved_obj
-                        except KeyError:
-                            print(f"Warning: Could not resolve parameter reference: {ref_path}")
-                            continue
-                    else:
-                        actual_param = param_obj
+                    actual_param = resolve_ref(param_obj, spec) if '$ref' in param_obj else param_obj
+                    if not actual_param:
+                        print(f"Warning: Could not resolve parameter reference: {param_obj}")
+                        continue
 
                     if not actual_param or 'name' not in actual_param:
                         print(f"Warning: Skipping parameter due to missing name or unresolved reference: {param_obj}")
@@ -259,6 +265,23 @@ def generate_mcp_server(
     Returns:
         Path to the generated project directory
     """
+    # Use the modular implementation if available
+    if USE_MODULAR:
+        try:
+            return modular_generate(
+                openapi_file,
+                output_dir,
+                api_url,
+                auth_type,
+                api_token,
+                api_username,
+                api_password
+            )
+        except Exception as e:
+            print(f"Warning: Error using modular implementation: {e}")
+            print("Falling back to original implementation...")
+    
+    # Original implementation
     # Parse the OpenAPI specification
     spec = parse_openapi_spec(openapi_file)
     
