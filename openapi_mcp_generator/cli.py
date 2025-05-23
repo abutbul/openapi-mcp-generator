@@ -44,25 +44,6 @@ def main():
     except Exception as e:
         print(f"Error generating MCP server: {e}", file=sys.stderr)
         return 1
-        project_dir = generate_mcp_server(
-            args.openapi_file,
-            args.output_dir,
-            args.api_url,
-            args.auth_type,
-            args.api_token,
-            args.api_username,
-            args.api_password
-        )
-        
-        print(f"MCP server generated successfully in: {project_dir}")
-        print(f"To build and run the Docker container:")
-        print(f"  cd {project_dir}")
-        print(f"  ./docker.sh build")
-        print(f"  ./docker.sh start --transport=sse")
-        return 0
-    except Exception as e:
-        print(f"Error generating MCP server: {e}", file=sys.stderr)
-        return 1
 
 
 if __name__ == "__main__":
