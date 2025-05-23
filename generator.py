@@ -39,19 +39,32 @@ except ImportError:
 
 def parse_openapi_spec(filepath: str) -> Dict[str, Any]:
     """
-    Parse an OpenAPI specification file.
+    Parse an OpenAPI specification file or directory.
     
     Args:
-        filepath: Path to the OpenAPI YAML file
+        filepath: Path to the OpenAPI YAML file or directory
         
     Returns:
         Dictionary containing the parsed OpenAPI specification
         
     Raises:
-        SystemExit: If the file cannot be read or parsed
+        SystemExit: If the file/directory cannot be read or parsed
     """
+    # Try to use the modular parser first
+    if USE_MODULAR:
+        try:
+            from openapi_mcp_generator.parser import parse_openapi_spec as modular_parse
+            return modular_parse(filepath)
+        except ImportError:
+            pass
+    
+    # Fallback to original implementation for single YAML files only
     if not os.path.exists(filepath):
         print(f"Error: OpenAPI specification file not found: {filepath}")
+        sys.exit(1)
+    
+    if os.path.isdir(filepath):
+        print(f"Error: Directory processing requires the modular parser. Please install the package.")
         sys.exit(1)
         
     try:
@@ -101,7 +114,7 @@ def generate_tool_definitions(spec: Dict[str, Any]) -> str:
                 # Get parameters
                 parameters_definitions = []
                 for param_obj in operation.get('parameters', []):
-                    actual_param = resolve_ref(param_obj, spec) if '$ref' in param_obj else param_obj
+                    actual_param = resolve_ref(spec, param_obj['$ref']) if '$ref' in param_obj else param_obj
                     if not actual_param:
                         print(f"Warning: Could not resolve parameter reference: {param_obj}")
                         continue
