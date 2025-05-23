@@ -59,6 +59,10 @@ jobs:
           grep -q "def get_BadRequestDetails_schema" ./tests/out/$GENERATED_DIR/mcp_server.py
         shell: bash
 
+      - name: Install pytest
+        run: |
+          pip install pytest
+
       - name: Run tests on generated server output
         run: |
           pytest tests/test_generated_server.py
