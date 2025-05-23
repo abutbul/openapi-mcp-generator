@@ -1,0 +1,46 @@
+name: Create Release Artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*' # Trigger on tags like v1.0, v2.0.1, etc.
+
+jobs:
+  build_and_upload_artifacts:
+    name: Build and Upload Distribution Artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Needed to checkout the repository
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' 
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel build
+
+      - name: Clean dist directory
+        run: rm -rf dist
+      - name: Build distribution archives
+        run: python -m build --sdist --wheel
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
