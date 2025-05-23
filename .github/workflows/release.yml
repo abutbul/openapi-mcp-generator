@@ -11,7 +11,7 @@ jobs:
     name: Build and Upload Distribution Artifacts
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Needed to checkout the repository
+      contents: write
 
     steps:
       - name: Checkout code
