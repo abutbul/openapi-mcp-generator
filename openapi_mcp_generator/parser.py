@@ -59,7 +59,7 @@ def sanitize_description(desc: str) -> str:
     return desc.replace("\n", " ").replace('"', '\\"')
 
 
-def resolve_reference(spec: Dict[str, Any], ref_path: str) -> Dict[str, Any]:
+def resolve_ref(spec: Dict[str, Any], ref_path: str) -> Dict[str, Any]:
     """
     Resolve a reference in the OpenAPI spec.
     

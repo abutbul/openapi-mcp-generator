@@ -16,6 +16,14 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from jinja2 import Environment, FileSystemLoader
 
+# Import from the parser module
+try:
+    from openapi_mcp_generator.parser import resolve_ref, parse_openapi_spec, sanitize_description
+except ImportError:
+    # Fallback for when running as standalone script
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'openapi_mcp_generator'))
+    from parser import resolve_ref, parse_openapi_spec, sanitize_description
+
 # Setup Jinja2 environment for templates
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
 env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
@@ -93,21 +101,10 @@ def generate_tool_definitions(spec: Dict[str, Any]) -> str:
                 # Get parameters
                 parameters_definitions = []
                 for param_obj in operation.get('parameters', []):
-                    actual_param = {}
-                    if '$ref' in param_obj:
-                        ref_path = param_obj['$ref']
-                        # Resolve the reference, e.g., #/components/parameters/IdRequired
-                        try:
-                            parts = ref_path.strip('#/').split('/')
-                            resolved_obj = spec
-                            for part in parts:
-                                resolved_obj = resolved_obj[part]
-                            actual_param = resolved_obj
-                        except KeyError:
-                            print(f"Warning: Could not resolve parameter reference: {ref_path}")
-                            continue
-                    else:
-                        actual_param = param_obj
+                    actual_param = resolve_ref(param_obj, spec) if '$ref' in param_obj else param_obj
+                    if not actual_param:
+                        print(f"Warning: Could not resolve parameter reference: {param_obj}")
+                        continue
 
                     if not actual_param or 'name' not in actual_param:
                         print(f"Warning: Skipping parameter due to missing name or unresolved reference: {param_obj}")

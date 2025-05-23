@@ -7,7 +7,7 @@ from OpenAPI specifications.
 
 import yaml
 from typing import Dict, Any, List
-from .parser import sanitize_description, resolve_reference
+from .parser import sanitize_description, resolve_ref
 
 
 def generate_tool_definitions(spec: Dict[str, Any]) -> str:
@@ -110,7 +110,7 @@ def _get_parameter_definitions(spec: Dict[str, Any], operation: Dict[str, Any]) 
         actual_param = {}
         if '$ref' in param_obj:
             ref_path = param_obj['$ref']
-            actual_param = resolve_reference(spec, ref_path)
+            actual_param = resolve_ref(spec, ref_path)
         else:
             actual_param = param_obj
 
