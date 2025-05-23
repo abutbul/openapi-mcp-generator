@@ -20,6 +20,15 @@ from jinja2 import Environment, FileSystemLoader
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
 env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 
+# Try to import from the modular version - if it fails, we'll use the original implementation
+try:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from openapi_mcp_generator.generator import generate_mcp_server as modular_generate
+    USE_MODULAR = True
+except ImportError:
+    USE_MODULAR = False
+
+
 def parse_openapi_spec(filepath: str) -> Dict[str, Any]:
     """
     Parse an OpenAPI specification file.
@@ -259,6 +268,23 @@ def generate_mcp_server(
     Returns:
         Path to the generated project directory
     """
+    # Use the modular implementation if available
+    if USE_MODULAR:
+        try:
+            return modular_generate(
+                openapi_file,
+                output_dir,
+                api_url,
+                auth_type,
+                api_token,
+                api_username,
+                api_password
+            )
+        except Exception as e:
+            print(f"Warning: Error using modular implementation: {e}")
+            print("Falling back to original implementation...")
+    
+    # Original implementation
     # Parse the OpenAPI specification
     spec = parse_openapi_spec(openapi_file)
     
