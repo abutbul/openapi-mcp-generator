@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "message": {
+      "type": "string"
+    },
+    "details": {
+      "$ref": "#/components/schemas/BadRequestDetails"
+    }
+  },
+  "required": ["code", "message"]
+}
